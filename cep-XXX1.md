@@ -51,7 +51,7 @@ The `whl` dictionary maps conda-like filenames to repodata records. The key MUST
 
 - **`name`**: Taken from the wheel's METADATA `Name` field, normalized per [CEP 26][cep-26] and any name mappings aligned with the channel declared in `info.channel_relations.base` when present (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping)).
 - **`version`**: Taken from the wheel's METADATA `Version` field, normalized per PEP 440.
-- **`build`**: Format `py{PY_MAJOR_VERSION}_{abi_tag}_{platform_tag}_{build_number}` (e.g., `py3_none_any_0`), conforming to CEP 26 build string conventions and the repodata record schema pattern `^([a-z0-9_.]+_)?[0-9]+$`. The build number MUST be at the end of the build string. The `{abi_tag}` and `{platform_tag}` are extracted from the wheel filename.
+- **`build`**: Format `{python_tag}_{abi_tag}_{platform_tag}_{build_number}` (e.g., `py3_none_any_0`), conforming to CEP 26 build string conventions and the repodata record schema pattern `^([a-z0-9_.]+_)?[0-9]+$`. The build number MUST be at the end of the build string. The `{abi_tag}` and `{platform_tag}` are extracted from the wheel filename.
 - **`build_number`**: As in regular conda packages. MUST be 0 initially. MAY be incremented for rebuilds.
 - **`depends`**: Array including:
   - `python` dependency from `Requires-Python` (if present), converted to conda format
@@ -100,7 +100,7 @@ The `whl` mapping (inside the `v{revision}` payload) SHALL follow the backwards-
 
 When populating repodata records for pure Python wheels:
 
-- `build`: MUST be py`PY_MAJOR_VERSION`_`abi_tag`_`platform_tag`_`build_number` (e.g. `py3_none_any_0`), where `{abi_tag}` and `{platform_tag}` are extracted from the wheel filename, and the build number MUST be at the end of the build string per the repodata record schema pattern
+- `build`: MUST be `python_tag`_`abi_tag`_`platform_tag`_`build_number` (e.g. `py3_none_any_0`), where `{python_tag}`, `{abi_tag}` and `{platform_tag}` are extracted from the wheel filename, and the build number MUST be at the end of the build string per the repodata record schema pattern
 - `build_number`: MUST be 0 for the initial addition of a wheel version. MAY be incremented for subsequent rebuilds of the same wheel version (e.g., to correct dependencies or metadata)
 - `subdir`: MUST be "noarch"
 - `noarch`: MUST be "python"
