@@ -7,7 +7,7 @@
   Dan Yeaw &lt;dyeaw@anaconda.com&gt;
 </td></tr>
 <tr><td> Created </td><td> Apr 24, 2026</td></tr>
-<tr><td> Updated </td><td> Apr 24, 2026</td></tr>
+<tr><td> Updated </td><td> Nov 17, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
 <tr><td> See also </td><td> [CEP XXX1 – Repodata wheel support](cep-XXX1.md), [CEP XXX2 – Wheel conda client support](cep-XXX2.md) </td></tr>

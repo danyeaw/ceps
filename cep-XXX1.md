@@ -8,7 +8,7 @@
   Travis Hathaway &lt;travis.j.hathaway@gmail.com&gt;
 </td></tr>
 <tr><td> Created </td><td> Dec 23, 2025</td></tr>
-<tr><td> Updated </td><td> Apr 24, 2026</td></tr>
+<tr><td> Updated </td><td> Nov 17, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 [CEP 43](https://conda.org/learn/ceps/cep-0043) [CEP 44](https://conda.org/learn/ceps/cep-0044) [CEP XXX2 (Wheel conda client support)](cep-XXX2.md) </td></tr>
