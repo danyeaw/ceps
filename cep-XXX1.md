@@ -112,7 +112,7 @@ Channel operators MUST convert Python dependency declarations (`Requires-Dist`, 
 
 Channel operators MAY read those declarations from the wheel's embedded `METADATA`, from the [PyPI JSON API][pypi-json-api] release payload for the same project and version as the wheel being indexed, or from both. Using the API can simplify batch indexing and mirrors. Regardless of source, the same conversion rules and interoperable minimum in [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance) apply.
 
-- **Package names:** Use the [CEP 26][cep-26] form, matching the existing conda-forge name where one exists
+- **Package names:** Use the [CEP 26][cep-26] form of each name. When the wheel channel declares a base channel in `info.channel_relations.base`, map names to the packages that base channel publishes so clients can match them (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping))
 - **Version specifiers:** Map PEP 440 [version specifiers][version-specifiers] to conda format:
   - The `==` operator is converted to an exact pin (removing the `==`)
   - All other PEP 440 operators (`>=`, `<=`, `<`, `>`, `~=`, `!=`) are used as-is
