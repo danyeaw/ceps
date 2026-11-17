@@ -50,12 +50,12 @@ Wheel support MUST follow [A backwards-compatible repodata update strategy](http
 The `whl` dictionary maps conda-like filenames to repodata records. The key MUST follow the format specified in [Key naming requirements](#key-naming-requirements). The value MUST be a repodata record object that conforms to the [repodata record schema][repodata-record-schema] with the following field specifications:
 
 - **`name`**: Taken from the wheel's METADATA `Name` field, normalized per [CEP 26][cep-26] and any name mappings aligned with the channel declared in `info.channel_relations.base` when present (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping)).
-- **`version`**: Taken from the wheel's METADATA `Version` field, normalized per PEP 440.
+- **`version`**: Taken from the wheel's METADATA `Version` field and published as a version literal that conforms to [CEP 26][cep-26] and orders per [CEP 33][cep-33]. Conda clients parse and compare that string with conda version rules, not PEP 440 rules.
 - **`build`**: Format `{python_tag}_{abi_tag}_{platform_tag}_{build_number}` (e.g., `py3_none_any_0`), conforming to CEP 26 build string conventions and the repodata record schema pattern `^([a-z0-9_.]+_)?[0-9]+$`. The build number MUST be at the end of the build string. The `{abi_tag}` and `{platform_tag}` are extracted from the wheel filename.
 - **`build_number`**: As in regular conda packages. MUST be 0 initially. MAY be incremented for rebuilds.
 - **`depends`**: Array including:
   - `python` dependency from `Requires-Python` (if present), converted to conda format
-  - All `Requires-Dist` entries from METADATA, converted from PEP 440 to conda format per [Dependency conversion](#dependency-conversion)
+  - All `Requires-Dist` entries from METADATA, with their PEP 440 specifiers converted to conda format per [Dependency conversion](#dependency-conversion)
   - Package names normalized to conda-style names per [CEP 26][cep-26]
 - **`extra_depends`**: MAY be present. When present, MUST be an object mapping extra names to lists of dependency strings for optional groups, per [CEP 44][cep-44]. When absent or empty, the record declares no optional groups beyond `depends`.
 - **`subdir`**: MUST be `"noarch"`.
@@ -68,7 +68,7 @@ The `whl` dictionary maps conda-like filenames to repodata records. The key MUST
 The key for each entry in `whl` MUST follow the standard conda distribution string format per [CEP 26][cep-26]: `{name}-{version}-{build string}`, where:
 
 - `{name}` is derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26][cep-26] and any name mappings inherited from the base channel when `info.channel_relations.base` is declared (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping))
-- `{version}` is the package version from METADATA
+- `{version}` is the package version from METADATA, formatted as specified for the `version` field above ([CEP 26][cep-26] literal, [CEP 33][cep-33] ordering)
 - `{build}` is the build string (e.g., `py3_none_any_0`, `py3_none_any_1`) from the `build` field, which includes the Python version, ABI tag, platform tag, and build number (with build number at the end)
 
 Examples:
@@ -364,6 +364,7 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [cep-15]: https://conda.org/learn/ceps/cep-0015
 [cep-16]: https://conda.org/learn/ceps/cep-0016
 [cep-26]: https://conda.org/learn/ceps/cep-0026
+[cep-33]: https://conda.org/learn/ceps/cep-0033
 [version-specifiers]: https://packaging.python.org/en/latest/specifications/version-specifiers/#id5
 [conda-pypi]: https://github.com/conda-incubator/conda-pypi
 [conda-pypi-marker-conversion]: https://conda.github.io/conda-pypi/developer/marker-conversion/#pep-508-variables
