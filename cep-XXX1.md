@@ -58,6 +58,7 @@ The `whl` dictionary maps conda-like filenames to repodata records. The key MUST
   - All `Requires-Dist` entries from METADATA, with their PEP 440 specifiers converted to conda format per [Dependency conversion](#dependency-conversion)
   - Package names normalized to conda-style names per [CEP 26][cep-26]
 - **`extra_depends`**: MAY be present. When present, MUST be an object mapping extra names to lists of dependency strings for optional groups, per [CEP 44][cep-44]. When absent or empty, the record declares no optional groups beyond `depends`.
+- **`constrains`**: MAY be present. When present, MUST be an array of conda matchspecs, per the [repodata record schema][repodata-record-schema]. A constraint restricts packages already in the environment without installing them, so channel operators SHOULD publish an exclusion in `constrains` when the wheel does not require the package, because a `depends` entry would install it.
 - **`subdir`**: MUST be `"noarch"`.
 - **`noarch`**: MUST be `"python"`.
 - **`fn`**: MUST be the wheel filename (`.whl`), as in standard conda repodata records (for example `requests-2.32.5-py3-none-any.whl`).
