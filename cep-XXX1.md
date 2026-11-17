@@ -28,14 +28,14 @@ We limit the scope to pure Python wheels to avoid platform-specific binary compa
 
 ## Relationship to companion CEPs
 
-- **[CEP XXX0 – Wheel support in conda (overview)][cep-xxx0]** — Why native wheel support, historical context, and discussion of rejected ideas (informative).
-- **[CEP XXX2 – Wheel conda client support][cep-xxx2]** — Normative client behavior: loading `whl` into the solve with other repodata records, download, and installation.
+- [CEP XXX0 – Wheel support in conda (overview)][cep-xxx0]: why native wheel support, historical context, and rejected ideas (informative).
+- [CEP XXX2 – Wheel conda client support][cep-xxx2]: normative client behavior for loading `whl` into the solve with other repodata records, download, and installation.
 
 ## Specification
 
 ### Expose wheels via `whl` inside a repodata revision (`v{revision}`)
 
-According to the current schema for [repodata.json][repodata-schema], the repodata object is traditionally organized around these top-level keys (the surface unchanged clients rely on):
+According to the current schema for [repodata.json][repodata-schema], the repodata object is traditionally organized around these top-level keys (the surface existing clients rely on):
 
 - repodata_version
 - info
@@ -69,7 +69,7 @@ The key for each entry in `whl` MUST follow the standard conda distribution stri
 
 - `{name}` is derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26][cep-26] and any name mappings inherited from the base channel when `info.channel_relations.base` is declared (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping))
 - `{version}` is the package version from METADATA, formatted as specified for the `version` field above ([CEP 26][cep-26] literal, [CEP 33][cep-33] ordering)
-- `{build}` is the build string (e.g., `py3_none_any_0`, `py3_none_any_1`) from the `build` field, which includes the Python version, ABI tag, platform tag, and build number (with build number at the end)
+- `{build}` is the build string from the `build` field (e.g., `py3_none_any_0`, `py3_none_any_1`), with the build number at the end
 
 Examples:
 
@@ -79,12 +79,11 @@ Examples:
 
 ### Naming standard and channel mapping
 
-The key name for wheel records SHALL follow the standard conda distribution string format `{name}-{version}-{build}` per [CEP 26][cep-26]. The build string includes the Python version, ABI tag, platform tag, and build number (e.g., `py3_none_any_0`), where the build number is at the end per the repodata record schema pattern.
-The ABI and platform tags are extracted from the wheel filename. The python_tag from the wheel filename is omitted as it is redundant with the Python version in the build string. This ensures compatibility with standard conda parsing while preserving wheel tag information within the build string.
+The key name for wheel records SHALL follow the standard conda distribution string format `{name}-{version}-{build}` per [CEP 26][cep-26], with the build string assembled as described in [Key naming requirements](#key-naming-requirements). The build string keeps the wheel's Python, ABI, and platform tags in that order with the build number last, so it parses as an ordinary conda build string and still records the wheel tags.
 
 When there are naming differences between PyPI wheels and conda packages, channel operators MUST determine the appropriate conda-style name by applying conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26].
 
-To help users understand which naming conventions are being used, a wheel channel MAY declare a **base** channel using `info.channel_relations.base` as specified in [Channel relations in repodata][cep-channel-relations].
+To help users understand which naming conventions are being used, a wheel channel MAY declare a base channel using `info.channel_relations.base` as specified in [Channel relations in repodata][cep-channel-relations].
 The base channel is the one clients load with higher priority. It is also the natural source of conda-style naming conventions and PyPI-to-conda name mappings for wheels published alongside that stack (for example, `conda-forge` as the base for a specialized wheel index on the same channel host).
 Channel references MUST use relative paths as required by that CEP (for example `"base": "../conda-forge"`). Absolute URLs in `info` are not valid channel references for relations.
 
@@ -96,7 +95,7 @@ Wheel artifacts SHALL be fetched like other conda packages: combine the channel 
 
 The `whl` mapping (inside the `v{revision}` payload) SHALL follow the backwards-compatible update strategy ([PR 146](https://github.com/conda/ceps/pull/146)).
 
-### Wheel-Specific Record Values
+### Wheel-specific record values
 
 When populating repodata records for pure Python wheels:
 
@@ -119,17 +118,17 @@ Wheels that fail any of these checks MUST NOT be added to `whl`.
 
 ### Dependency conversion
 
-Channel operators MUST convert Python dependency declarations—`Requires-Dist`, `Requires-Python`, and extras—into conda `depends`, **`extra_depends`** when applicable, and related fields, following the rules below.
+Channel operators MUST convert Python dependency declarations (`Requires-Dist`, `Requires-Python`, and extras) into conda `depends`, `extra_depends` when applicable, and related fields, following the rules below.
 
-Those declarations MAY be read from the wheel's embedded **`METADATA`** and/or from the [**PyPI JSON API**][pypi-json-api] release payload for the same **project** and **version** as the wheel being indexed. Using the API can simplify batch indexing and mirrors. Regardless of source, the same conversion rules and interoperable minimum in [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance) apply.
+Channel operators MAY read those declarations from the wheel's embedded `METADATA`, from the [PyPI JSON API][pypi-json-api] release payload for the same project and version as the wheel being indexed, or from both. Using the API can simplify batch indexing and mirrors. Regardless of source, the same conversion rules and interoperable minimum in [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance) apply.
 
-- **Package names:** Names per [CEP 26][cep-26] and match existing conda-forge package names where they exist
+- **Package names:** Use the [CEP 26][cep-26] form, matching the existing conda-forge name where one exists
 - **Version specifiers:** Map PEP 440 [version specifiers][version-specifiers] to conda format:
   - The `==` operator is converted to an exact pin (removing the `==`)
   - All other PEP 440 operators (`>=`, `<=`, `<`, `>`, `~=`, `!=`) are used as-is
   - Multiple version specifiers are combined with commas (e.g., `>=1.0,<2.0`)
 
-- **Python version requirements:** Convert Requires-Python to explicit python dependency
+- **Python version requirements:** Convert `Requires-Python` to an explicit `python` dependency
 - **Environment markers:** Map Python-version markers on `Requires-Dist` to conditional `MatchSpec` `when=` as specified in [CEP 43][cep-43]. Other markers are out of scope for the default conversion rules in this CEP (see [Limitations](#limitations)).
 
 Example conversion:
@@ -159,32 +158,30 @@ Resulting conda record:
 
 ### PEP 508 marker translation guidance
 
-This subsection layers interoperable expectations for the repodata format, non-normative reference material for richer mappings, and a general translation policy.
-
 #### Interoperable minimum
 
-For published `whl` records, the following conversions are the **normative floor** aligned with [Dependency conversion](#dependency-conversion) and [CEP 43][cep-43] and [CEP 44][cep-44]:
+For published `whl` records, the following conversions are the normative floor aligned with [Dependency conversion](#dependency-conversion) and [CEP 43][cep-43] and [CEP 44][cep-44]:
 
 - **`Requires-Python`:** MUST appear as an explicit `python` dependency in `depends`.
 - **Python-version conditions on `Requires-Dist`:** MUST be represented with conditional `MatchSpec` `when=` on the relevant dependency strings per [CEP 43][cep-43].
-- **`extra` (optional groups):** MUST be represented with **`extra_depends`** and optional-group selection per [CEP 44][cep-44], not only as opaque marker text on `depends`.
+- **`extra` (optional groups):** MUST be represented with `extra_depends` and optional-group selection per [CEP 44][cep-44], not only as opaque marker text on `depends`.
 
 Channels and tools MAY apply additional, stricter mappings where they can express them in repodata.
 
 #### Non-normative extended mappings
 
-Per-variable translation of other PEP 508 markers (for example `sys_platform`, `platform_system`) to `when=` fragments, virtual packages, or omissions is **not** fully specified in this CEP. For a non-normative, per-variable description—including how **conda-pypi** maps markers to `when=` and **`extra_depends`**—see [PEP 508 marker conversion][conda-pypi-marker-conversion] in the conda-pypi documentation.
+Per-variable translation of other PEP 508 markers (for example `sys_platform`, `platform_system`) to `when=` fragments, virtual packages, or omissions is not fully specified in this CEP. For a non-normative, per-variable description, including how conda-pypi maps markers to `when=` and `extra_depends`, see [PEP 508 marker conversion][conda-pypi-marker-conversion] in the conda-pypi documentation.
 
 #### Lossy translation
 
-When a channel cannot encode a PEP 508 dimension in repodata (for example no virtual package for an architecture string, or unsupported boolean branches), the operator MAY **omit** the condition, **simplify** the requirement, or **widen** the dependency (for example listing a package in `depends` without `when=` so it applies in more environments than PEP 508 would).
-Channel operators SHOULD document their policy for such cases (including any conservative “include unconditionally” behavior).
+When a channel cannot encode a PEP 508 dimension in repodata (for example no virtual package for an architecture string, or unsupported boolean branches), the operator MAY omit the condition, simplify the requirement, or widen the dependency (for example listing a package in `depends` without `when=` so it applies in more environments than PEP 508 would).
+Channel operators SHOULD document their policy for such cases (including any conservative "include unconditionally" behavior).
 
 ### Handling conditional dependencies and extras
 
 Wheel `depends` entries that encode PEP 508 environment markers MUST use conditional `MatchSpec` syntax with `when=` as specified in [CEP 43][cep-43].
 
-PyPI **extras** (optional dependency groups) MUST be represented on the wheel repodata record using an **`extra_depends`** object (a mapping from extra name to lists of dependency strings) as specified in [CEP 44][cep-44]. A default install uses only `depends` and MUST NOT union in `extra_depends` entries unless the user selects optional groups (for example with `extras=` in `MatchSpec` as described in [CEP 44][cep-44]).
+PyPI extras (optional dependency groups) MUST be represented on the wheel repodata record using an `extra_depends` object (a mapping from extra name to lists of dependency strings) as specified in [CEP 44][cep-44]. A default install uses only `depends` and MUST NOT union in `extra_depends` entries unless the user selects optional groups (for example with `extras=` in `MatchSpec` as described in [CEP 44][cep-44]).
 
 ### Solver behavior
 
@@ -195,10 +192,10 @@ This CEP only requires that published `whl` records are valid [repodata records]
 
 This CEP has the following known limitations:
 
-1. **Pure Python only:** This CEP explicitly does not address wheels with binary extensions, which require platform-specific compatibility guarantees beyond the current scope. Conda’s strength is binary compatibility, so using conda packages may be the optimal solution.
+1. **Pure Python only:** This CEP explicitly does not address wheels with binary extensions, which require platform-specific compatibility guarantees beyond the current scope. Conda's strength is binary compatibility, so conda packages may be the better fit there.
 2. **Environment markers (publisher defaults):** Default conversion rules in this CEP focus on Python-version markers on `Requires-Dist`, mapped to `when=` per [CEP 43][cep-43]. Other markers (for example `sys_platform`) are out of scope for those default publisher rules and are not required to be converted into repodata here; see [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance).
 How conda clients evaluate `when=` and optional groups at solve time (including environment context) is specified in [CEP XXX2][cep-xxx2] together with [CEP 43][cep-43] and [CEP 44][cep-44].
-3. **Conditionals and extras:** Normative syntax and record fields for `when=` on `depends` and for optional groups in **`extra_depends`** are specified in [CEP 43][cep-43] and [CEP 44][cep-44], on which this repodata CEP and [CEP XXX2][cep-xxx2] rely for PyPI-aligned conditionals and extras in published records and at client solve time, respectively.
+3. **Conditionals and extras:** Normative syntax and record fields for `when=` on `depends` and for optional groups in `extra_depends` are specified in [CEP 43][cep-43] and [CEP 44][cep-44], on which this repodata CEP and [CEP XXX2][cep-xxx2] rely for PyPI-aligned conditionals and extras in published records and at client solve time, respectively.
 4. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale SHOULD implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance.
 
 ## Rationale
@@ -237,15 +234,15 @@ Channel operators adding wheel support SHOULD:
 - Document any naming conventions specific to their channel
 - Host wheel artifacts on the channel (under `noarch/` by default) so clients can fetch them with standard conda URL construction
 - Establish patching workflows to correct metadata issues and resolve dependency conflicts
-- Document patching policies and maintain transparency about modified packages
+- Document patching policies and list which packages were modified
 
 ### Implementation approaches
 
 Channels MAY implement wheel support through various approaches:
 
-- **Manual curation**: Channels can manually add specific pure-Python wheels via repodata patching, providing full control over which packages are included and allowing for quality control and metadata validation before exposure to users.
-- **Semi-automated**: Channels can implement automated processes to discover and add wheels, with manual review and patching workflows for quality assurance.
-- **Full automation**: Channels can automatically mirror and index wheels from PyPI, though this requires robust validation, patching infrastructure, and consideration of repodata size impacts.
+- **Manual curation**: Channels add specific pure-Python wheels via repodata patching, which gives full control over which packages are included and allows metadata validation before users see them.
+- **Semi-automated**: Channels automate discovery and addition of wheels, with manual review and patching for quality assurance.
+- **Full automation**: Channels mirror and index wheels from PyPI, though this requires thorough validation, patching infrastructure, and consideration of repodata size impacts.
 
 A phased approach starting with manual curation and moving toward increased automation as processes mature is RECOMMENDED. This balances the lower barrier to entry (no recipes needed for many packages) with quality control. Complex packages with metadata conflicts or special requirements should still use traditional conda feedstocks.
 
@@ -258,7 +255,7 @@ A complete channel index also includes the traditional top-level keys (`repodata
 
 ### Channel-hosted wheel (default location)
 
-A channel-hosted wheel uses standard conda URL construction. The `.whl` file is served under the channel’s `noarch` directory (or under `info.base_url` when set), the same way as other `noarch` artifacts:
+A channel-hosted wheel uses standard conda URL construction. The `.whl` file is served under the channel's `noarch` directory (or under `info.base_url` when set), the same way as other `noarch` artifacts:
 
 ```json
 {
@@ -293,13 +290,13 @@ A channel-hosted wheel uses standard conda URL construction. The `.whl` file is 
 }
 ```
 
-With this configuration, the wheel file is downloaded from (assuming the channel is at `https://repo.example.com/channel`):
+With the channel at `https://repo.example.com/channel`, the wheel file is downloaded from:
 
 - `https://repo.example.com/channel/noarch/requests-2.32.5-py3-none-any.whl`
 
 ### Name mapping
 
-Here is an example of name mapping and normalization of the record name and dependencies.
+Name mapping and normalization show up in both the record key and the dependency list.
 
 ```json
 {
@@ -325,13 +322,13 @@ Here is an example of name mapping and normalization of the record name and depe
 }
 ```
 
-This example demonstrates two types of name normalization:
+Two kinds of normalization appear in this record:
 
 1. Record key format: The package is indexed using the standard conda distribution string format `{conda_name}-{version}-{build}` per [CEP 26][cep-26]: `annotated_types-0.7.0-py3_none_any_0`. The name portion (`annotated_types`) comes from the METADATA `Name` field (`annotated-types`), normalized to conda conventions (mapped to `annotated_types` to match conda-forge naming).
 The build string (`py3_none_any_0`) includes the Python version, ABI tag (`none`), platform tag (`any`), and build number (`0` at the end), all extracted from the wheel filename (`annotated_types-0.7.0-py3-none-any.whl`), which normalizes the package name to underscores per PEP 427.
 2. Dependency name mapping: This package depends on `typing_extensions`, which is listed in the `depends` field. On PyPI, this package is named `typing-extensions` (with a hyphen), but it has been mapped to the name `typing_extensions` (with an underscore) to match the existing conda-forge package name. Such mappings may be aligned with the channel declared in `info.channel_relations.base` (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping)).
 
-This example also demonstrates conditional dependencies. The original `METADATA` file from the wheel has the following dependency information:
+The wheel also declares a conditional dependency. Its `METADATA` has:
 
 ```text
 Requires-Python: >=3.8
