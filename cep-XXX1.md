@@ -52,7 +52,7 @@ The `whl` dictionary maps conda-like filenames to repodata records. The key MUST
 - **`name`**: Taken from the wheel's METADATA `Name` field, normalized per [CEP 26][cep-26] and any name mappings aligned with the channel declared in `info.channel_relations.base` when present (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping)).
 - **`version`**: Taken from the wheel's METADATA `Version` field and published as a version literal that conforms to [CEP 26][cep-26] and orders per [CEP 33][cep-33]. Conda clients parse and compare that string with conda version rules, not PEP 440 rules.
 - **`build`**: Format `{python_tag}_{abi_tag}_{platform_tag}_{build_number}` (e.g., `py3_none_any_0`), conforming to CEP 26 build string conventions and the repodata record schema pattern `^([a-z0-9_.]+_)?[0-9]+$`. The build number MUST be at the end of the build string. The `{abi_tag}` and `{platform_tag}` are extracted from the wheel filename.
-- **`build_number`**: As in regular conda packages. MUST be 0 initially. MAY be incremented for rebuilds.
+- **`build_number`**: As in regular conda packages. MUST be 0 initially. MAY be incremented for rebuilds, for example to correct dependencies or metadata.
 - **`depends`**: Array including:
   - `python` dependency from `Requires-Python` (if present), converted to conda format
   - All `Requires-Dist` entries from METADATA, with their PEP 440 specifiers converted to conda format per [Dependency conversion](#dependency-conversion)
@@ -94,16 +94,6 @@ Channel operators SHOULD document any naming conventions and mappings specific t
 Wheel artifacts SHALL be fetched like other conda packages: combine the channel location (or the repodata `info.base_url` when present, per [CEP 15][cep-15] / [CEP 16][cep-16]) with `subdir` and `fn`. Channel operators MUST make the `.whl` file available at that URL (typically `{channel}/noarch/{fn}`).
 
 The `whl` mapping (inside the `v{revision}` payload) SHALL follow the backwards-compatible update strategy ([PR 146](https://github.com/conda/ceps/pull/146)).
-
-### Wheel-specific record values
-
-When populating repodata records for pure Python wheels:
-
-- `build`: MUST be `python_tag`_`abi_tag`_`platform_tag`_`build_number` (e.g. `py3_none_any_0`), where `{python_tag}`, `{abi_tag}` and `{platform_tag}` are extracted from the wheel filename, and the build number MUST be at the end of the build string per the repodata record schema pattern
-- `build_number`: MUST be 0 for the initial addition of a wheel version. MAY be incremented for subsequent rebuilds of the same wheel version (e.g., to correct dependencies or metadata)
-- `subdir`: MUST be "noarch"
-- `noarch`: MUST be "python"
-- `fn`: MUST be the wheel filename (`.whl`)
 
 ### Pure Python wheel validation
 
@@ -325,7 +315,7 @@ Name mapping and normalization show up in both the record key and the dependency
 Two kinds of normalization appear in this record:
 
 1. Record key format: The package is indexed using the standard conda distribution string format `{conda_name}-{version}-{build}` per [CEP 26][cep-26]: `annotated_types-0.7.0-py3_none_any_0`. The name portion (`annotated_types`) comes from the METADATA `Name` field (`annotated-types`), normalized to conda conventions (mapped to `annotated_types` to match conda-forge naming).
-The build string (`py3_none_any_0`) includes the Python version, ABI tag (`none`), platform tag (`any`), and build number (`0` at the end), all extracted from the wheel filename (`annotated_types-0.7.0-py3-none-any.whl`), which normalizes the package name to underscores per PEP 427.
+The build string (`py3_none_any_0`) includes the Python tag, ABI tag (`none`), platform tag (`any`), and build number (`0` at the end), all extracted from the wheel filename (`annotated_types-0.7.0-py3-none-any.whl`), which normalizes the package name to underscores per PEP 427.
 2. Dependency name mapping: This package depends on `typing_extensions`, which is listed in the `depends` field. On PyPI, this package is named `typing-extensions` (with a hyphen), but it has been mapped to the name `typing_extensions` (with an underscore) to match the existing conda-forge package name. Such mappings may be aligned with the channel declared in `info.channel_relations.base` (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping)).
 
 The wheel also declares a conditional dependency. Its `METADATA` has:
