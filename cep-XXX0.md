@@ -193,11 +193,11 @@ This approach carries the same user-facing problem: users still have to know whi
 Pixi has integrated uv for installing packages from PyPI. The user adds the dependency through `pixi add --pypi <package>`. Then, when Pixi is solving the environment, it solves the conda packages using Rattler, and then calls uv to solve the PyPI dependencies. Disadvantages of this approach include:
 
 - Like the approaches above, users still have to name the PyPI packages themselves with `pixi add --pypi`.
-- Although Pixi and uv are both very fast, it is still slower than performing a single solve of the environment.
+- Although Pixi and uv are both very fast, it is still slower than a single solve of the environment that resolves both ecosystems at once (see [Conda & PyPI solvers][pixi-conda-pypi] in the pixi documentation).
 
 ### Direct PyPI communication without repodata
 
-Another alternative would be for conda clients to query PyPI's API directly during solving, fetching wheel metadata on-demand rather than including it in repodata. This idea was rejected:
+Because wheels are indexed as ordinary repodata records, conda solvers resolve conda packages and wheels in the same pass, and a client does not need a separate solver that understands PyPI's index. The alternative of querying PyPI's API during a solve, fetching wheel metadata on demand instead of publishing it in repodata, was rejected:
 
 - While resolvo (used by Rattler) supports dynamic metadata fetching during solving, as [rip](https://github.com/prefix-dev/rip) shows, libsolv requires complete package metadata upfront. This inconsistency across solvers would complicate implementation and limit compatibility.
 
@@ -254,5 +254,6 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [cep-channel-relations]: https://github.com/conda/ceps/pull/155
 [conda-pupa]: https://github.com/dholth/conda-pupa
 [uv-in-pixi]: https://prefix.dev/blog/uv_in_pixi
+[pixi-conda-pypi]: https://pixi.prefix.dev/latest/concepts/conda_pypi/#solvers
 [rip]: https://github.com/prefix-dev/rip
 [grayskull]: https://conda.github.io/grayskull/
