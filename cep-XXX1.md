@@ -53,7 +53,7 @@ The `whl` dictionary maps conda-like filenames to repodata records. The key MUST
 - **`version`**: Taken from the wheel's METADATA `Version` field and published as a version literal that conforms to [CEP 26][cep-26] and orders per [CEP 33][cep-33]. Conda clients parse and compare that string with conda version rules, not PEP 440 rules.
 - **`build`**: Format `{python_tag}_{abi_tag}_{platform_tag}_{build_number}` (e.g., `py3_none_any_0`), conforming to CEP 26 build string conventions and the repodata record schema pattern `^([a-z0-9_.]+_)?[0-9]+$`. The build number MUST be at the end of the build string. The `{abi_tag}` and `{platform_tag}` are extracted from the wheel filename.
 - **`build_number`**: As in regular conda packages. MUST be 0 initially. MAY be incremented for rebuilds, for example to correct dependencies or metadata.
-- **`depends`**: Array including:
+- **`depends`**: Array of conda matchspecs, including:
   - `python` dependency from `Requires-Python` (if present), converted to conda format
   - All `Requires-Dist` entries from METADATA, with their PEP 440 specifiers converted to conda format per [Dependency conversion](#dependency-conversion)
   - Package names normalized to conda-style names per [CEP 26][cep-26]
@@ -109,9 +109,9 @@ Wheels that fail any of these checks MUST NOT be added to `whl`.
 
 ### Dependency conversion
 
-Channel operators MUST convert Python dependency declarations (`Requires-Dist`, `Requires-Python`, and extras) into conda `depends`, `extra_depends` when applicable, and related fields, following the rules below.
+Channel operators SHOULD convert Python dependency declarations (`Requires-Dist`, `Requires-Python`, and extras) into conda `depends`, `extra_depends` when applicable, and related fields, following the rules below. Conversion happens when the record is published, so clients read conda semantics and never need to parse PEP 440 versions or PEP 508 markers.
 
-Channel operators MAY read those declarations from the wheel's embedded `METADATA`, from the [PyPI JSON API][pypi-json-api] release payload for the same project and version as the wheel being indexed, or from both. Using the API can simplify batch indexing and mirrors. Regardless of source, the same conversion rules and interoperable minimum in [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance) apply.
+Channel operators MAY read those declarations from the wheel's embedded `METADATA`, from the [PyPI JSON API][pypi-json-api] release payload for the same project and version as the wheel being indexed, or from both. Using the API can simplify batch indexing and mirrors. Regardless of source, the same recommendations in [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance) apply.
 
 - **Package names:** Use the [CEP 26][cep-26] form of each name. When the wheel channel declares a base channel in `info.channel_relations.base`, map names to the packages that base channel publishes so clients can match them (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping))
 - **Version specifiers:** Map PEP 440 [version specifiers][version-specifiers] to conda format:
@@ -149,15 +149,15 @@ Resulting conda record:
 
 ### PEP 508 marker translation guidance
 
-#### Interoperable minimum
+#### Recommended mappings
 
-For published `whl` records, the following conversions are the normative floor aligned with [Dependency conversion](#dependency-conversion) and [CEP 43][cep-43] and [CEP 44][cep-44]:
+For published `whl` records, the following conversions are recommended, aligned with [Dependency conversion](#dependency-conversion) and [CEP 43][cep-43] and [CEP 44][cep-44]:
 
-- **`Requires-Python`:** MUST appear as an explicit `python` dependency in `depends`.
-- **Python-version conditions on `Requires-Dist`:** MUST be represented with conditional `MatchSpec` `when=` on the relevant dependency strings per [CEP 43][cep-43].
-- **`extra` (optional groups):** MUST be represented with `extra_depends` and optional-group selection per [CEP 44][cep-44], not only as opaque marker text on `depends`.
+- **`Requires-Python`:** SHOULD appear as an explicit `python` dependency in `depends`.
+- **Python-version conditions on `Requires-Dist`:** SHOULD be represented with conditional `MatchSpec` `when=` on the relevant dependency strings per [CEP 43][cep-43].
+- **`extra` (optional groups):** SHOULD be represented with `extra_depends` and optional-group selection per [CEP 44][cep-44], not only as opaque marker text on `depends`.
 
-Channels and tools MAY apply additional, stricter mappings where they can express them in repodata.
+Channels and tools MAY apply additional, stricter mappings where they can express them in repodata, and MAY deviate from these recommendations where the wheel metadata cannot be expressed in repodata, per [Lossy translation](#lossy-translation).
 
 #### Non-normative extended mappings
 
@@ -172,7 +172,7 @@ Channel operators SHOULD document their policy for such cases (including any con
 
 Wheel `depends` entries that encode PEP 508 environment markers MUST use conditional `MatchSpec` syntax with `when=` as specified in [CEP 43][cep-43].
 
-PyPI extras (optional dependency groups) MUST be represented on the wheel repodata record using an `extra_depends` object (a mapping from extra name to lists of dependency strings) as specified in [CEP 44][cep-44]. A default install uses only `depends` and MUST NOT union in `extra_depends` entries unless the user selects optional groups (for example with `extras=` in `MatchSpec` as described in [CEP 44][cep-44]).
+PyPI extras (optional dependency groups) SHOULD be represented on the wheel repodata record using an `extra_depends` object (a mapping from extra name to lists of dependency strings) as specified in [CEP 44][cep-44]. A default install uses only `depends` and MUST NOT union in `extra_depends` entries unless the user selects optional groups (for example with `extras=` in `MatchSpec` as described in [CEP 44][cep-44]).
 
 ### Solver behavior
 
