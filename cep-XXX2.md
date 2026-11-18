@@ -7,10 +7,10 @@
   Dan Yeaw &lt;dyeaw@anaconda.com&gt;
 </td></tr>
 <tr><td> Created </td><td> Apr 24, 2026</td></tr>
-<tr><td> Updated </td><td> Nov 17, 2026</td></tr>
+<tr><td> Updated </td><td> Nov 18, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td><td> [CEP XXX1 – Repodata wheel support](cep-XXX1.md) https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 [CEP 43](https://conda.org/learn/ceps/cep-0043) [CEP 44](https://conda.org/learn/ceps/cep-0044) </td></tr>
+<tr><td> Requires </td><td> [CEP XXX1 – Repodata wheel support](cep-XXX1.md), [CEP 48](https://conda.org/learn/ceps/cep-0048), [CEP 42](https://conda.org/learn/ceps/cep-0042), [CEP 43](https://conda.org/learn/ceps/cep-0043), [CEP 44](https://conda.org/learn/ceps/cep-0044) </td></tr>
 <tr><td> See also </td><td> [CEP XXX0 – Wheel support in conda (overview)](cep-XXX0.md) </td></tr>
 </table>
 
@@ -37,7 +37,7 @@ This CEP assumes repodata that conforms to [CEP XXX1 – Repodata wheel support]
 
 ### Repodata consumption
 
-Conda clients that implement wheel support MUST load records from the `whl` mapping in each supported [repodata revision](https://github.com/conda/ceps/pull/146) into the same index used for `packages` and `packages.conda` for that revision. Clients SHOULD apply the same subdir and channel filtering hooks used for other repodata records unless a separate policy is explicitly documented.
+Conda clients that implement wheel support MUST load records from the `whl` mapping in each supported repodata revision, as defined by [CEP 48](https://conda.org/learn/ceps/cep-0048), into the same index used for `packages` and `packages.conda` for that revision. Clients SHOULD apply the same subdir and channel filtering hooks used for other repodata records unless a separate policy is explicitly documented.
 
 Wheel records for pure Python packages use `subdir: "noarch"` per [CEP XXX1][cep-xxx1] and no additional platform filter is required for those wheels beyond the normal noarch and virtual-package logic for the target prefix.
 
@@ -51,7 +51,7 @@ For wheel records, [CEP 43][cep-43] defines `when=` on `depends` and [CEP 44][ce
 
 - Evaluate `when=` for wheel `depends` entries according to the same rules as for other new-syntax records, using an environment model that provides at least Python version and, where applicable, virtual packages (see [Marker handling](#marker-handling)).
 - Honor `extra_depends` when the user selects optional groups (for example with `extras=` in `MatchSpec`) per [CEP 44][cep-44], and MUST NOT pull in `extra_depends` groups on a default install.
-- Load wheel records that use `when=` or `extra_depends` in the same `v{revision}` payload and revision-handling as other records introduced under the [backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146).
+- Load wheel records that use `when=` or `extra_depends` in the same `v{revision}` payload and revision-handling as other records introduced under [CEP 48](https://conda.org/learn/ceps/cep-0048).
 
 The strings on a wheel's `depends` and `extra_depends` come from the wheel `METADATA` via channel operators per [CEP XXX1][cep-xxx1]; the client interprets them and does not need to re-parse the wheel for dependency resolution (reading `METADATA` for validation or error messages is allowed).
 
@@ -98,7 +98,7 @@ Conda clients install from the `.whl` artifact referenced in repodata and lay ou
 
 - **Index:** Parse `whl` inside each supported `v{revision}` object alongside `packages` / `packages.conda` into the same solver-facing index.
 - **Conditional dependencies and extras ([CEP 43][cep-43], [CEP 44][cep-44]):** Evaluate `when=` on `depends` and honor `extra_depends` when the user requests optional groups, consistent with the published record strings (wheel rows use the same syntax as other CEP 43 / CEP 44 records).
-- **Revision gating:** Treat new-syntax wheel records with the same `v{revision}` handling as the rest of the PR 146 strategy (do not expect older repodata-only clients to read `whl`).
+- **Revision gating:** Treat new-syntax wheel records with the same `v{revision}` handling as CEP 48 (do not expect older repodata-only clients to read `whl`).
 - **Download:** Reuse the channel and fetch stack used for other artifacts (`fn`, channel/`base_url`, and checksum verification).
 - **Install:** Integrate wheels using the same prefix layout and metadata model as `noarch: python` conda packages ([CEP 20][cep-20], [CEP 34][cep-34]), including `info/link.json` for entry points when using conda's link pipeline. For a worked example, the [conda-pypi][conda-pypi] project builds a conda package shape from a wheel and suppresses duplicate `bin` scripts when it uses `link.json`.
 
@@ -110,7 +110,7 @@ After installing `requests-2.32.5-py3-none-any.whl` from a wheel repodata record
 
 ## Backwards compatibility
 
-- **Repodata shape:** The `whl` key appears only under a registered `v{revision}` (see [PR 146](https://github.com/conda/ceps/pull/146)). Conda clients that do not support that revision or the `whl` index MUST ignore unknown `v{revision}` members or fall back to earlier revisions per channel policy.
+- **Repodata shape:** The `whl` key appears only under a registered `v{revision}` (see [CEP 48](https://conda.org/learn/ceps/cep-0048)). Conda clients that do not support that revision or the `whl` index MUST ignore unknown `v{revision}` members or fall back to earlier revisions per channel policy.
 - **Record syntax:** Records that use `when=` and `extra_depends` are part of the new-syntax repodata world defined by [CEP 43][cep-43] and [CEP 44][cep-44]; wheel rows are not a separate syntax fork.
 
 ## Rejected ideas

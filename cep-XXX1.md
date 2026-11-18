@@ -8,10 +8,10 @@
   Travis Hathaway &lt;travis.j.hathaway@gmail.com&gt;
 </td></tr>
 <tr><td> Created </td><td> Dec 23, 2025</td></tr>
-<tr><td> Updated </td><td> Nov 17, 2026</td></tr>
+<tr><td> Updated </td><td> Nov 18, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 [CEP 43](https://conda.org/learn/ceps/cep-0043) [CEP 44](https://conda.org/learn/ceps/cep-0044) [CEP XXX2 (Wheel conda client support)](cep-XXX2.md) </td></tr>
+<tr><td> Requires </td><td> [CEP 48](https://conda.org/learn/ceps/cep-0048) [CEP 42](https://conda.org/learn/ceps/cep-0042) [CEP 43](https://conda.org/learn/ceps/cep-0043) [CEP 44](https://conda.org/learn/ceps/cep-0044) [CEP XXX2 (Wheel conda client support)](cep-XXX2.md) </td></tr>
 <tr><td> See also </td><td> [CEP XXX0 – Wheel support in conda (overview)](cep-XXX0.md) </td></tr>
 </table>
 
@@ -43,7 +43,7 @@ According to the current schema for [repodata.json][repodata-schema], the repoda
 - packages.conda
 - removed
 
-Wheel support MUST follow [A backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146): publishers SHALL register the revision in `info.repodata_revisions` and SHALL place the wheel index under the matching top-level `v{revision}` dictionary (where `revision` is the integer listed for that entry). This CEP specifies a `whl` member inside that `v{revision}` object. The value MUST be a mapping whose entries are [repodata record][repodata-record-schema] objects.
+Wheel support MUST follow [CEP 48 – A backwards-compatible repodata update strategy](https://conda.org/learn/ceps/cep-0048): publishers SHALL register the revision in `info.repodata_revisions` and SHALL place the wheel index under the matching top-level `v{revision}` dictionary (where `revision` is the integer listed for that entry). This CEP specifies a `whl` member inside that `v{revision}` object. The value MUST be a mapping whose entries are [repodata record][repodata-record-schema] objects.
 
 ### `whl` dictionary structure
 
@@ -94,7 +94,7 @@ Channel operators SHOULD document any naming conventions and mappings specific t
 
 Wheel artifacts SHALL be fetched like other conda packages: combine the channel location (or the repodata `info.base_url` when present, per [CEP 15][cep-15] / [CEP 16][cep-16]) with `subdir` and `fn`. Channel operators MUST make the `.whl` file available at that URL (typically `{channel}/noarch/{fn}`).
 
-The `whl` mapping (inside the `v{revision}` payload) SHALL follow the backwards-compatible update strategy ([PR 146](https://github.com/conda/ceps/pull/146)).
+The `whl` mapping (inside the `v{revision}` payload) SHALL follow the backwards-compatible update strategy ([CEP 48](https://conda.org/learn/ceps/cep-0048)).
 
 ### Pure Python wheel validation
 
@@ -238,7 +238,7 @@ A phased approach starting with manual curation and moving toward increased auto
 ## Examples
 
 The JSON fragments below use revision `3` as an example (`v3`). The integer MUST match an entry in
-`info.repodata_revisions` per [the backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146).
+`info.repodata_revisions` per [CEP 48](https://conda.org/learn/ceps/cep-0048).
 A complete channel index also includes the traditional top-level keys (`repodata_version`, `packages`,
 `packages.conda`, `removed`, and so on). A full generated example is checked in with [conda-pypi][conda-pypi-example-repodata].
 
@@ -333,7 +333,7 @@ The package record expresses the conditional with `when=` so `typing_extensions`
 - [conda-pypi project][conda-pypi]
 - [PEP 508 marker conversion (conda-pypi developer docs)][conda-pypi-marker-conversion]
 - [Example `repodata.json` (conda-pypi test channel)][conda-pypi-example-repodata]
-- [Channel relations in repodata (PR 155)][cep-channel-relations]
+- [Channel relations in repodata (CEP 42)][cep-channel-relations]
 - [CEP 43 – Conditional dependencies][cep-43]
 - [CEP 44 – Optional dependency groups][cep-44]
 - [conda-pupa][conda-pupa]
@@ -355,7 +355,7 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [conda-pypi]: https://github.com/conda-incubator/conda-pypi
 [conda-pypi-marker-conversion]: https://conda.github.io/conda-pypi/developer/marker-conversion/#pep-508-variables
 [conda-pypi-example-repodata]: https://github.com/conda-incubator/conda-pypi/blob/main/tests/conda_local_channel/noarch/repodata.json
-[cep-channel-relations]: https://github.com/conda/ceps/pull/155
+[cep-channel-relations]: https://conda.org/learn/ceps/cep-0042
 [cep-43]: https://conda.org/learn/ceps/cep-0043
 [cep-44]: https://conda.org/learn/ceps/cep-0044
 [conda-pupa]: https://github.com/dholth/conda-pupa

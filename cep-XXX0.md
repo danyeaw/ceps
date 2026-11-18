@@ -7,7 +7,7 @@
   Dan Yeaw &lt;dyeaw@anaconda.com&gt;
 </td></tr>
 <tr><td> Created </td><td> Apr 24, 2026</td></tr>
-<tr><td> Updated </td><td> Nov 17, 2026</td></tr>
+<tr><td> Updated </td><td> Nov 18, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
 <tr><td> See also </td><td> [CEP XXX1 – Repodata wheel support](cep-XXX1.md), [CEP XXX2 – Wheel conda client support](cep-XXX2.md) </td></tr>
@@ -240,7 +240,7 @@ Native wheel support gives the same user experience (transparent access to pure-
 - [Adopting uv in pixi][uv-in-pixi]
 - [rip][rip]
 - [conda-pypi project][conda-pypi]
-- [Channel relations in repodata (PR 155)][cep-channel-relations]
+- [Channel relations in repodata (CEP 42)][cep-channel-relations]
 - [conda-pupa][conda-pupa]
 
 ## Copyright
@@ -251,7 +251,7 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [cep-xxx1]: cep-XXX1.md
 [cep-xxx2]: cep-XXX2.md
 [conda-pypi]: https://github.com/conda-incubator/conda-pypi
-[cep-channel-relations]: https://github.com/conda/ceps/pull/155
+[cep-channel-relations]: https://conda.org/learn/ceps/cep-0042
 [conda-pupa]: https://github.com/dholth/conda-pupa
 [uv-in-pixi]: https://prefix.dev/blog/uv_in_pixi
 [pixi-conda-pypi]: https://pixi.prefix.dev/latest/concepts/conda_pypi/#solvers
