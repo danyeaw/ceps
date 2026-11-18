@@ -155,7 +155,7 @@ For published `whl` records, the following conversions are recommended, aligned 
 
 - **`Requires-Python`:** SHOULD appear as an explicit `python` dependency in `depends`.
 - **Python-version conditions on `Requires-Dist`:** SHOULD be represented with conditional `MatchSpec` `when=` on the relevant dependency strings per [CEP 43][cep-43].
-- **`extra` (optional groups):** SHOULD be represented with `extra_depends` and optional-group selection per [CEP 44][cep-44], not only as opaque marker text on `depends`.
+- **`extra` (optional groups):** SHOULD be represented with `extra_depends` and optional-group selection per [CEP 44][cep-44].
 
 Channels and tools MAY apply additional, stricter mappings where they can express them in repodata, and MAY deviate from these recommendations where the wheel metadata cannot be expressed in repodata, per [Lossy translation](#lossy-translation).
 
@@ -170,9 +170,7 @@ Channel operators SHOULD document their policy for such cases (including any con
 
 ### Handling conditional dependencies and extras
 
-Wheel `depends` entries that encode PEP 508 environment markers MUST use conditional `MatchSpec` syntax with `when=` as specified in [CEP 43][cep-43].
-
-PyPI extras (optional dependency groups) SHOULD be represented on the wheel repodata record using an `extra_depends` object (a mapping from extra name to lists of dependency strings) as specified in [CEP 44][cep-44]. A default install uses only `depends` and MUST NOT union in `extra_depends` entries unless the user selects optional groups (for example with `extras=` in `MatchSpec` as described in [CEP 44][cep-44]).
+`depends` entries that encode PEP 508 environment markers MUST use conditional matchspec syntax with `when=` as specified in [CEP 43][cep-43]. Extras that a channel publishes MUST be carried in `extra_depends`, not as marker text on `depends`, and a default install uses only `depends` and MUST NOT union in `extra_depends` entries unless the user selects optional groups (for example with `extras=` in `MatchSpec` as described in [CEP 44][cep-44]).
 
 ### Solver behavior
 
