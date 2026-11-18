@@ -59,7 +59,7 @@ The `whl` dictionary maps conda-like filenames to repodata records. The key MUST
   - Package names normalized to conda-style names per [CEP 26][cep-26]
 - **`extra_depends`**: MAY be present. When present, MUST be an object mapping extra names to lists of dependency strings for optional groups, per [CEP 44][cep-44]. When absent or empty, the record declares no optional groups beyond `depends`.
 - **`constrains`**: MAY be present. When present, MUST be an array of conda matchspecs, per the [repodata record schema][repodata-record-schema]. A constraint restricts packages already in the environment without installing them, so channel operators SHOULD publish an exclusion in `constrains` when the wheel does not require the package, because a `depends` entry would install it.
-- **`subdir`**: MUST be `"noarch"`.
+- **`subdir`**: MUST be the subdir implied by the wheel's platform tag (see [Pure Python wheel validation](#pure-python-wheel-validation) and [Wheel download locations](#wheel-download-locations)). Validation requires platform tag `any`, so the value is always `"noarch"`.
 - **`noarch`**: MUST be `"python"`.
 - **`fn`**: MUST be the wheel filename (`.whl`), as in standard conda repodata records (for example `requests-2.32.5-py3-none-any.whl`).
 - **`sha256`**, **`size`**: Standard repodata fields for the wheel file.
@@ -181,7 +181,7 @@ This CEP only requires that published `whl` records are valid [repodata records]
 
 This CEP has the following known limitations:
 
-1. **Pure Python only:** This CEP explicitly does not address wheels with binary extensions, which require platform-specific compatibility guarantees beyond the current scope. Conda's strength is binary compatibility, so conda packages may be the better fit there.
+1. **Pure Python only:** This CEP explicitly does not address wheels with binary extensions, which require platform-specific compatibility guarantees beyond the current scope. Conda's strength is binary compatibility, so conda packages may be the better fit there. Records with a `subdir` other than `noarch` are unsupported by this CEP and MUST NOT be published in `whl`. Publishing them requires a follow-up CEP that specifies where they download from and how they install.
 2. **Environment markers (publisher defaults):** Default conversion rules in this CEP focus on Python-version markers on `Requires-Dist`, mapped to `when=` per [CEP 43][cep-43]. Other markers (for example `sys_platform`) are out of scope for those default publisher rules and are not required to be converted into repodata here; see [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance).
 How conda clients evaluate `when=` and optional groups at solve time (including environment context) is specified in [CEP XXX2][cep-xxx2] together with [CEP 43][cep-43] and [CEP 44][cep-44].
 3. **Conditionals and extras:** Normative syntax and record fields for `when=` on `depends` and for optional groups in `extra_depends` are specified in [CEP 43][cep-43] and [CEP 44][cep-44], on which this repodata CEP and [CEP XXX2][cep-xxx2] rely for PyPI-aligned conditionals and extras in published records and at client solve time, respectively.

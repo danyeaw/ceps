@@ -39,7 +39,7 @@ This CEP assumes repodata that conforms to [CEP XXX1 – Repodata wheel support]
 
 Conda clients that implement wheel support MUST load records from the `whl` mapping in each supported repodata revision, as defined by [CEP 48](https://conda.org/learn/ceps/cep-0048), into the same index used for `packages` and `packages.conda` for that revision. Clients SHOULD apply the same subdir and channel filtering hooks used for other repodata records unless a separate policy is explicitly documented.
 
-Wheel records for pure Python packages use `subdir: "noarch"` per [CEP XXX1][cep-xxx1] and no additional platform filter is required for those wheels beyond the normal noarch and virtual-package logic for the target prefix.
+Wheel records for pure Python packages use `subdir: "noarch"` per [CEP XXX1][cep-xxx1] and no additional platform filter is required for those wheels beyond the normal noarch and virtual-package logic for the target prefix. A record with a different `subdir` is outside the scope of this CEP, and clients are not required to solve for or install it.
 
 ### Solver: dependency resolution
 
